@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+@plugin "daisyui" {
+
+  themes: cupcake --default, dark;
+
+}
+
+
+
+@plugin "daisyui/theme" {
+  name: "light";
+  default: true;
+
+  --color-base-100: #faf5ff;  /* Very light purple tint for background */
+  --color-base-200: #f3e8ff;  /* Slightly darker purple tint */
+  --color-base-300: #e9d5ff;
+  --color-base-400: #d8b4fe;
+  --color-base-content: #1e1b4b;  /* Deep navy for contrast */
+
+  --color-primary: #7e22ce;  /* Rich purple (slightly brighter than original) */
+  --color-primary-content: #ffffff;
+
+  --color-secondary: #f472b6;  /* Soft pink (slightly adjusted for better harmony) */
+  --color-secondary-content: #831843;  /* Dark pink for text on secondary */
+
+  --color-accent: #c026d3;  /* Vibrant purple-pink accent */
+  --color-accent-content: #ffffff;
+
+  --color-neutral: #4c1d95;  /* Deep purple for neutral elements */
+  --color-neutral-content: #ffffff;
+
+  --color-info: #3b82f6;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+}
+
+
+
+@plugin "daisyui/theme" {
+  name: "dark";
+  default: false;
+
+  --color-base-100: #1e1b4b;  /* Deep navy as background */
+  --color-base-200: #2a2668;  /* Slightly lighter navy */
+  --color-base-300: #3a3785;
+  --color-base-400: #4c4a9e;
+  --color-base-content: #e9d5ff;  /* Light purple for text */
+
+  --color-primary: #a855f7;  /* Brighter purple for better visibility */
+  --color-primary-content: #ffffff;
+
+  --color-secondary: #f472b6;  /* Same pink but will pop more against dark bg */
+  --color-secondary-content: #ffffff;  /* White for better readability */
+
+  --color-accent: #d946ef;  /* More vibrant accent for dark mode */
+  --color-accent-content: #ffffff;
+
+  --color-neutral: #7e22ce;  /* Original primary becomes neutral */
+  --color-neutral-content: #ffffff;
+
+  /* Keeping utility colors the same but they'll appear more vibrant in dark mode */
+  --color-info: #3b82f6;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+}
+
+
+@theme {
+
+  --font-aladin: Aladin;
+
+}
+
+
+
+body {
+
+  font-family: poppins;
+
+}
+
+
+
+a.active {
+
+  @apply text-amber-700;
+
+}
+html{
+    scroll-behavior: smooth ;
+}
