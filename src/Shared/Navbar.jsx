@@ -135,7 +135,7 @@ const Navbar = () => {
         </motion.button>
 
         <motion.div whileHover={{ scale: 1.05 }}>
-          <Link to="/login" className="btn btn-ghost gap-2">
+          <Link to="/signin" className="btn btn-ghost gap-2">
             <FiUser />
             <span className="hidden sm:inline">Sign In</span>
           </Link>

@@ -5,6 +5,7 @@ import image2 from '../assets/brands/casio.png';
 import image3 from '../assets/brands/moonstar.png';
 import image4 from '../assets/brands/randstad.png';
 import image5 from '../assets/brands/start.png';
+import image6 from '../assets/brands/start-people 1.png';
 
 const SalesTeam = () => {
   const brands = [
@@ -12,10 +13,11 @@ const SalesTeam = () => {
     { id: 2, image: image2, alt: "casio" },
     { id: 3, image: image3, alt: "moonstar" },
     { id: 4, image: image4, alt: "randstad" },
-    { id: 5, image: image5, alt: "start" }
+    { id: 5, image: image5, alt: "start" },
+    { id: 5, image: image6, alt: "start-people" }
   ];
 
-  // Duplicate the brands array to create seamless looping
+  
   const duplicatedBrands = [...brands, ...brands];
 
   return (
@@ -38,7 +40,7 @@ const SalesTeam = () => {
 
         {/* Marquee Container */}
         <div className="relative w-full overflow-hidden">
-          {/* First Marquee */}
+       
           <motion.div
             className="flex items-center gap-12 md:gap-16 lg:gap-24 w-max"
             animate={{
