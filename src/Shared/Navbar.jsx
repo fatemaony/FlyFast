@@ -4,11 +4,24 @@ import { motion } from 'framer-motion';
 import { FiSun, FiMoon, FiMenu, FiX, FiUser } from 'react-icons/fi';
 import { FaMotorcycle } from 'react-icons/fa';
 import Logo from '../Logo/Logo';
+import useAuth from '../Hook/useAuth';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+
+  const {user, SignOut} =useAuth()
+
+  const handleSignOut = () => {
+    SignOut()
+      .then(result => {
+        console.log("sign out successfully");
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -24,10 +37,12 @@ const Navbar = () => {
   };
 
   const links = [
+    { name:' Home', path: '/'},
     { name: 'Services', path: '/services' },
+    { name: 'Coverage', path: '/coverage'},
     { name: 'About Us', path: '/about' },
-    { name: 'Pricing', path: '/pricing' },
-    { name: 'Contact', path: '/contact' }
+    { name: 'Parcel', path: '/parcel' },
+    
   ];
 
   const navVariants = {
@@ -90,12 +105,14 @@ const Navbar = () => {
         
         <motion.div 
           whileHover={{ scale: 1.05 }}
-          className="btn btn-ghost p-0"
+          className="p-0 -mt-5"
         >
-          <Link to="/" className="flex items-center gap-2">
-            <Logo />
+          
+            <div>
+              <Logo />
+            </div>
             
-          </Link>
+          
         </motion.div>
       </div>
 
@@ -135,17 +152,20 @@ const Navbar = () => {
         </motion.button>
 
         <motion.div whileHover={{ scale: 1.05 }}>
-          <Link to="/signin" className="btn btn-ghost gap-2">
+          {
+            user? <button onClick={()=>handleSignOut()} className='btn btn-ghost gap-2'>Sign Out</button>
+            : <Link to="/signin" className="btn btn-ghost gap-2">
             <FiUser />
             <span className="hidden sm:inline">Sign In</span>
           </Link>
+          }
         </motion.div>
 
         <motion.div 
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          <Link to="/become-rider" className="btn btn-primary gap-2">
+          <Link to="rider" className="btn btn-primary gap-2">
             <FaMotorcycle />
             <span className="hidden sm:inline">Be Rider</span>
           </Link>

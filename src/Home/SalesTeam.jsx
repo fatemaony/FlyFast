@@ -14,10 +14,9 @@ const SalesTeam = () => {
     { id: 3, image: image3, alt: "moonstar" },
     { id: 4, image: image4, alt: "randstad" },
     { id: 5, image: image5, alt: "start" },
-    { id: 5, image: image6, alt: "start-people" }
+    { id: 6, image: image6, alt: "start-people" } // Changed id to 6
   ];
 
-  
   const duplicatedBrands = [...brands, ...brands];
 
   return (
@@ -40,7 +39,7 @@ const SalesTeam = () => {
 
         {/* Marquee Container */}
         <div className="relative w-full overflow-hidden">
-       
+          {/* First Marquee */}
           <motion.div
             className="flex items-center gap-12 md:gap-16 lg:gap-24 w-max"
             animate={{
@@ -52,9 +51,9 @@ const SalesTeam = () => {
               ease: 'linear',
             }}
           >
-            {duplicatedBrands.map((brand) => (
+            {duplicatedBrands.map((brand, index) => (
               <div 
-                key={`first-${brand.id}`} 
+                key={`first-${brand.id}-${index}`} // Added index to make key unique
                 className="flex-shrink-0 grayscale hover:grayscale-0 transition-all duration-300 hover:scale-105"
               >
                 <img 
@@ -66,7 +65,7 @@ const SalesTeam = () => {
             ))}
           </motion.div>
 
-         
+          {/* Second Marquee */}
           <motion.div
             className="flex items-center gap-12 md:gap-16 lg:gap-24 w-max mt-8"
             animate={{
@@ -78,9 +77,9 @@ const SalesTeam = () => {
               ease: 'linear',
             }}
           >
-            {duplicatedBrands.map((brand) => (
+            {duplicatedBrands.map((brand, index) => (
               <div 
-                key={`second-${brand.id}`} 
+                key={`second-${brand.id}-${index}`} // Added index to make key unique
                 className="flex-shrink-0 grayscale hover:grayscale-0 transition-all duration-300 hover:scale-105"
               >
                 <img 
