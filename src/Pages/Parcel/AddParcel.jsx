@@ -2,32 +2,129 @@ import React from "react";
 import { motion } from "framer-motion";
 import { FaBox } from "react-icons/fa";
 import { useForm } from "react-hook-form";
+import { useLoaderData } from "react-router";
+import Swal from "sweetalert2";
 
 const AddParcel = () => {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm();
+  const warehouses = useLoaderData();
+  
+  // Get unique regions from warehouse data
+  const regions = [...new Set(warehouses.map(warehouse => warehouse.region))];
+
+  // Watch form fields for calculations
+  const senderRegion = watch("senderRegion");
+  const receiverRegion = watch("receiverRegion");
+  const parcelType = watch("parcelType");
+  const parcelWeight = watch("parcelWeight");
+  const pickupHouse = watch("pickupHouse");
+  const deliveryHouse = watch("deliveryHouse");
+
+  // Filter districts based on selected region
+  const getDistrictsByRegion = (region) => {
+    return warehouses
+      .filter(warehouse => warehouse.region === region)
+      .map(warehouse => warehouse.district);
+  };
+
+  // Calculate shipping cost based on the pricing structure
+  const calculateShippingCost = (data) => {
+    const isSameCity = data.pickupHouse === data.deliveryHouse;
+    let basePrice = 0;
+    let additionalCost = 0;
+    let description = "";
+    let weightInfo = "";
+
+    if (data.parcelType === "Document") {
+      basePrice = isSameCity ? 60 : 80;
+      description = `Document (${isSameCity ? "Within City" : "Outside City/District"})`;
+      weightInfo = "Weight not applicable for documents";
+    } else {
+      // Non-Document
+      const weight = parseFloat(data.parcelWeight) || 0;
+      weightInfo = `${weight} kg`;
+      
+      if (weight <= 3) {
+        basePrice = isSameCity ? 110 : 150;
+        description = `Non-Document (Up to 3kg, ${isSameCity ? "Within City" : "Outside City/District"})`;
+      } else {
+        basePrice = isSameCity ? 110 : 150;
+        const extraWeight = Math.ceil(weight - 3);
+        additionalCost = extraWeight * 40;
+        if (!isSameCity) {
+          additionalCost += 40; // Additional ৳40 for outside city
+        }
+        description = `Non-Document (>3kg, ${isSameCity ? "Within City" : "Outside City/District"})`;
+      }
+    }
+
+    const totalCost = basePrice + additionalCost;
+
+    return {
+      basePrice,
+      additionalCost,
+      totalCost,
+      description,
+      isSameCity,
+      weightInfo,
+    };
+  };
 
   const onSubmit = (data) => {
-    console.log(data);
-    // Handle form submission here
+    const costDetails = calculateShippingCost(data);
+    
+    Swal.fire({
+      title: 'Shipping Cost Breakdown',
+      html: `
+        <div class="text-left">
+          <p><strong>Parcel Type:</strong> ${data.parcelType}</p>
+          ${costDetails.weightInfo ? `<p><strong>Weight:</strong> ${costDetails.weightInfo}</p>` : ''}
+          <p><strong>Route:</strong> ${costDetails.isSameCity ? "Within City" : "Outside City/District"}</p>
+          <hr class="my-2">
+          <p><strong>Base Price:</strong> ৳${costDetails.basePrice}</p>
+          ${costDetails.additionalCost > 0 ? `<p><strong>Additional Cost:</strong> ৳${costDetails.additionalCost}</p>` : ''}
+          <hr class="my-2">
+          <p class="text-xl font-bold text-primary">Total Cost: ৳${costDetails.totalCost}</p>
+        </div>
+      `,
+      icon: 'info',
+      confirmButtonText: 'Confirm Booking',
+      confirmButtonColor: '#3b82f6',
+      showCancelButton: true,
+      cancelButtonText: 'Edit Details',
+      focusConfirm: false,
+      customClass: {
+        popup: 'rounded-xl',
+        title: 'text-2xl',
+        htmlContainer: 'text-left',
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Proceed with booking submission
+        console.log("Booking confirmed", data);
+        // Add your booking submission logic here
+      }
+    });
   };
 
   return (
-    <div className="px-12 py-25 max-w-6xl mx-auto">
+    <div className="px-4 md:px-12 py-20 max-w-6xl mx-auto">
       <motion.h1
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-4xl text-primary text-center font-bold mb-6"
+        className="text-3xl md:text-4xl text-primary text-center font-bold mb-6"
       >
         Add Parcel
       </motion.h1>
 
       <form onSubmit={handleSubmit(onSubmit)} className="bg-white p-6 shadow-lg rounded-xl">
         {/* Parcel Type */}
-        <p className="font-semibold text-2xl mb-5">Enter your parcel details</p>
+        <p className="font-semibold text-xl md:text-2xl mb-5">Enter your parcel details</p>
         <div className="flex items-center gap-6 mb-6">
           <div className="flex gap-4">
             <label className="label cursor-pointer">
@@ -64,23 +161,31 @@ const AddParcel = () => {
             />
             {errors.parcelName && <span className="text-red-500">{errors.parcelName.message}</span>}
           </div>
-          <div>
-            <input
-              type="text"
-              placeholder="Parcel Weight (gm)"
-              className="input input-bordered w-full"
-              {...register("parcelWeight", {
-                required: "Parcel weight is required",
-                pattern: {
-                  value: /^[0-9]*$/,
-                  message: "Please enter a valid number",
-                },
-              })}
-            />
-            {errors.parcelWeight && <span className="text-red-500">{errors.parcelWeight.message}</span>}
-          </div>
+          {watch("parcelType") === "Non-Document" && (
+            <div>
+              <input
+                type="number"
+                step="0.1"
+                placeholder="Parcel Weight (kg)"
+                className="input input-bordered w-full"
+                {...register("parcelWeight", {
+                  required: "Parcel weight is required for non-documents",
+                  min: {
+                    value: 0.1,
+                    message: "Weight must be at least 0.1kg"
+                  },
+                  pattern: {
+                    value: /^[0-9.]*$/,
+                    message: "Please enter a valid weight",
+                  },
+                })}
+              />
+              {errors.parcelWeight && <span className="text-red-500">{errors.parcelWeight.message}</span>}
+            </div>
+          )}
         </div>
 
+        {/* Rest of the form remains the same */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
           {/* Sender Details */}
           <div>
@@ -98,13 +203,16 @@ const AddParcel = () => {
               <div>
                 <select
                   className="select select-bordered w-full"
-                  {...register("pickupHouse", { required: "Pickup house is required" })}
+                  {...register("pickupHouse", { required: "Pickup warehouse is required" })}
                 >
                   <option value="" disabled selected>
-                    Select Pickup Wise House
+                    Select Pickup Warehouse
                   </option>
-                  <option value="House A">House A</option>
-                  <option value="House B">House B</option>
+                  {warehouses.map((warehouse) => (
+                    <option key={`pickup-${warehouse.district}`} value={warehouse.district}>
+                      {warehouse.district} ({warehouse.city})
+                    </option>
+                  ))}
                 </select>
                 {errors.pickupHouse && <span className="text-red-500">{errors.pickupHouse.message}</span>}
               </div>
@@ -138,13 +246,34 @@ const AddParcel = () => {
                   {...register("senderRegion", { required: "Sender region is required" })}
                 >
                   <option value="" disabled selected>
-                    Select your region
+                    Select sender region
                   </option>
-                  <option value="Dhaka">Dhaka</option>
-                  <option value="Chattogram">Chattogram</option>
+                  {regions.map((region) => (
+                    <option key={`sender-region-${region}`} value={region}>
+                      {region}
+                    </option>
+                  ))}
                 </select>
                 {errors.senderRegion && <span className="text-red-500">{errors.senderRegion.message}</span>}
               </div>
+              {senderRegion && (
+                <div>
+                  <select
+                    className="select select-bordered w-full"
+                    {...register("senderDistrict", { required: "Sender district is required" })}
+                  >
+                    <option value="" disabled selected>
+                      Select sender district
+                    </option>
+                    {getDistrictsByRegion(senderRegion).map((district) => (
+                      <option key={`sender-district-${district}`} value={district}>
+                        {district}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.senderDistrict && <span className="text-red-500">{errors.senderDistrict.message}</span>}
+                </div>
+              )}
             </div>
           </div>
 
@@ -164,13 +293,16 @@ const AddParcel = () => {
               <div>
                 <select
                   className="select select-bordered w-full"
-                  {...register("deliveryHouse", { required: "Delivery house is required" })}
+                  {...register("deliveryHouse", { required: "Delivery warehouse is required" })}
                 >
                   <option value="" disabled selected>
-                    Select Delivery Wise House
+                    Select Delivery Warehouse
                   </option>
-                  <option value="House X">House X</option>
-                  <option value="House Y">House Y</option>
+                  {warehouses.map((warehouse) => (
+                    <option key={`delivery-${warehouse.district}`} value={warehouse.district}>
+                      {warehouse.district} ({warehouse.city})
+                    </option>
+                  ))}
                 </select>
                 {errors.deliveryHouse && <span className="text-red-500">{errors.deliveryHouse.message}</span>}
               </div>
@@ -204,13 +336,34 @@ const AddParcel = () => {
                   {...register("receiverRegion", { required: "Receiver region is required" })}
                 >
                   <option value="" disabled selected>
-                    Select your region
+                    Select receiver region
                   </option>
-                  <option value="Khulna">Khulna</option>
-                  <option value="Rajshahi">Rajshahi</option>
+                  {regions.map((region) => (
+                    <option key={`receiver-region-${region}`} value={region}>
+                      {region}
+                    </option>
+                  ))}
                 </select>
                 {errors.receiverRegion && <span className="text-red-500">{errors.receiverRegion.message}</span>}
               </div>
+              {receiverRegion && (
+                <div>
+                  <select
+                    className="select select-bordered w-full"
+                    {...register("receiverDistrict", { required: "Receiver district is required" })}
+                  >
+                    <option value="" disabled selected>
+                      Select receiver district
+                    </option>
+                    {getDistrictsByRegion(receiverRegion).map((district) => (
+                      <option key={`receiver-district-${district}`} value={district}>
+                        {district}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.receiverDistrict && <span className="text-red-500">{errors.receiverDistrict.message}</span>}
+                </div>
+              )}
             </div>
           </div>
         </div>

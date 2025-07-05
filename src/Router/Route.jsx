@@ -43,7 +43,9 @@ const router = createBrowserRouter([
       },
       {
         path:"rider",
-        Component:Rider
+        Component:Rider,
+        loader:()=>fetch("./warehouses.json")
+
       },
       {
         path:"about",
@@ -54,7 +56,8 @@ const router = createBrowserRouter([
        element:
        <PrivateRoute>
           <AddParcel/>
-       </PrivateRoute>
+       </PrivateRoute>,
+       loader:()=>fetch("./warehouses.json")
       }
     ]
   },
